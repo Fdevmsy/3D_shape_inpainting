@@ -22,18 +22,18 @@ python EncoderDecoderGAN3D.py
 
 For the fist few epochs: 
 
-![](/Users/ShiyuMu/Deep_Learning_Projects/3D_shape_inpainting/photo_2018-07-06_19-34-57.jpg)
+![](photo_2018-07-06_19-34-57.jpg)
 
 
-![](/Users/ShiyuMu/Deep_Learning_Projects/3D_shape_inpainting/photo_2018-07-06_19-35-00.jpg)
+![](photo_2018-07-06_19-35-00.jpg)
 
 After 2000 epochs:
 
-![](/Users/ShiyuMu/Deep_Learning_Projects/3D_shape_inpainting/photo_2018-07-06_19-34-53.jpg)
+![](photo_2018-07-06_19-34-53.jpg)
 
-![](/Users/ShiyuMu/Deep_Learning_Projects/3D_shape_inpainting/photo_2018-07-06_19-33-51.jpg)
+![](photo_2018-07-06_19-33-51.jpg)
 
-![](/Users/ShiyuMu/Deep_Learning_Projects/3D_shape_inpainting/photo_2018-07-06_19-33-26.jpg)
+![](photo_2018-07-06_19-33-26.jpg)
 
 ## Reference
 
