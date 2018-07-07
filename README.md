@@ -1,6 +1,7 @@
 # 3D Shape Completion 
 
 **Shiyu Mou**
+
 **shiyumou@usc.edu**
 ## Introduction
 
@@ -38,4 +39,5 @@ After 2000 epochs:
 ## Reference
 
 [1] [https://github.com/eriklindernoren/Keras-GAN](https://github.com/eriklindernoren/Keras-GAN)
+
 [2] [Shape Inpainting using 3D Generative Adversarial Network and Recurrent Convolutional Networks](https://arxiv.org/abs/1711.06375) Weiyue Wang, Qiangui Huang, Suya You, Chao Yang, Ulrich Neumann. 
