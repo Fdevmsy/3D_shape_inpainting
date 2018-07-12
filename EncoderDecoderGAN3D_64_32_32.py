@@ -155,7 +155,7 @@ class EncoderDecoderGAN():
         x1 = np.random.randint(0, self.vol_cols - self.mask_width, vols.shape[0])
         x2 = x1 + self.mask_width
         z1 = np.random.randint(0, self.vol_height - self.mask_length, vols.shape[0])
-
+        z2 = z1 + self.mask_length
 
         masked_vols = np.empty_like(vols)
         missing_parts = np.empty((vols.shape[0], self.mask_height, self.mask_width, self.mask_length, self.channels))

@@ -152,10 +152,10 @@ class EncoderDecoderGAN():
     def mask_randomly(self, vols):
         y1 = np.random.randint(0, self.vol_rows - self.mask_height, vols.shape[0])
         y2 = y1 + self.mask_height
-        x1 = np.random.randint(0, self.vol_rows - self.mask_width, vols.shape[0])
+        x1 = np.random.randint(0, self.vol_cols - self.mask_width, vols.shape[0])
         x2 = x1 + self.mask_width
-        z1 = np.random.randint(0, self.vol_rows - self.mask_height, vols.shape[0])
-        z2 = z1 + self.mask_height
+        z1 = np.random.randint(0, self.vol_height - self.mask_length, vols.shape[0])
+        z2 = z1 + self.mask_length
 
 
         masked_vols = np.empty_like(vols)
