@@ -33,6 +33,13 @@ After 2000 epochs:
 
 ![](images__32cube/photo_2018-07-06_19-33-26.jpg)
 
+## Higher Resolution
+
+3D convolutional neural networks are pretty computational expensive, I also tried 64^3 cubes and 64x32x32 shapes. The 64^3 cubes obviously need more memory and time to train. 
+
+## Other Applications
+
+This code can be easily applied to other dataset like ShapeNet. The input format used in this code is illustrated in voxelFormat.pdf
 ## Reference
 
 [1] [https://github.com/eriklindernoren/Keras-GAN](https://github.com/eriklindernoren/Keras-GAN)
