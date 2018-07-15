@@ -20,18 +20,18 @@ python EncoderDecoderGAN3D.py
 
 For the fist few epochs: 
 
-![](photo_2018-07-06_19-34-57.jpg)
+![](images__32cube/photo_2018-07-06_19-34-57.jpg)
 
 
-![](photo_2018-07-06_19-35-00.jpg)
+![](images__32cube/photo_2018-07-06_19-35-00.jpg)
 
 After 2000 epochs:
 
-![](photo_2018-07-06_19-34-53.jpg)
+![](images__32cube/photo_2018-07-06_19-34-53.jpg)
 
-![](photo_2018-07-06_19-33-51.jpg)
+![](images__32cube/photo_2018-07-06_19-33-51.jpg)
 
-![](photo_2018-07-06_19-33-26.jpg)
+![](images__32cube/photo_2018-07-06_19-33-26.jpg)
 
 ## Reference
 

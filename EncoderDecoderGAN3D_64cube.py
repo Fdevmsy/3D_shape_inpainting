@@ -18,12 +18,13 @@ from keras.models import load_model
 
 class EncoderDecoderGAN():
     def __init__(self):
-        self.vol_rows = 32
-        self.vol_cols = 32
-        self.vol_height = 32
-        self.mask_height = 16
-        self.mask_width = 16
-        self.mask_length = 16
+        self.vol_rows = 64
+        self.vol_cols = 64
+        self.vol_height = 64
+        self.mask_height = 32
+        self.mask_width = 32
+        self.mask_length = 32
+
         self.channels = 1
         self.num_classes = 2
         self.vol_shape = (self.vol_rows, self.vol_cols, self.vol_height, self.channels)
@@ -136,8 +137,8 @@ class EncoderDecoderGAN():
 
     def generateWall(self):
 
-        x, y, z = np.indices((32, 32, 32))
-        voxel = (x < 28)&(x>5) & (y>5) & (y < 28) & (z>10)&(z < 25)
+        x, y, z = np.indices((64, 64, 64))
+        voxel = (x < 56)&(x>10) & (y>10) & (y < 56) & (z>20)&(z < 50)
         
         # add channel 
         voxel = voxel[...,np.newaxis].astype(np.float)
@@ -203,13 +204,14 @@ class EncoderDecoderGAN():
                 vols = X_train[idx]
                 self.sample_images(epoch, vols)
                 self.save_model()
+    
     def sample_images(self, epoch, vols):
         r, c = 2, 2
 
         masked_vols, missing_parts, (y1, y2, x1, x2, z1, z2) = self.mask_randomly(vols)
         gen_missing = self.generator.predict(masked_vols)
         gen_missing = np.where(gen_missing > 0.5, 1, 0)
-        fig = plt.figure(figsize=plt.figaspect(0.5))
+        fig = plt.figure(figsize=plt.figaspect(0.5), dpi=300)
 
         vols = 0.5 * vols + 0.5
 
@@ -219,7 +221,7 @@ class EncoderDecoderGAN():
             colors1 = np.empty(masked_vol.shape, dtype=object)
             colors1[masked_vol] = 'red'
             ax = fig.add_subplot(1, 2, 1, projection='3d')
-            ax.voxels(masked_vol, facecolors=colors1, edgecolor='k')
+            ax.voxels(masked_vol, facecolors=colors1, edgecolor='black', linewidth=0.2)
             
             filled_in = np.zeros_like(masked_vol)
             # filled_in = vols[i].copy()            
@@ -234,7 +236,7 @@ class EncoderDecoderGAN():
             colors2[fill] = 'blue'
 
             ax = fig.add_subplot(1, 2, 2, projection='3d')
-            ax.voxels(combine_voxels, facecolors=colors2, edgecolor='k')
+            ax.voxels(combine_voxels, facecolors=colors2, edgecolor='black', linewidth=0.2)
             # ax.voxels(masked_vol, facecolors=colors1, edgecolor='k')
                      
         # plt.show()
