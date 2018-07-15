@@ -41,15 +41,11 @@ class EncoderDecoderGAN():
             self.discriminator = self.build_discriminator() 
             print("No checkpoints found")   
 
-        # discriminator
-        
+        # discriminator      
         self.discriminator.compile(loss='binary_crossentropy',
             optimizer=optimizer,
             metrics=['accuracy'])
-
         # generator
-        
-
         # The generator takes noise as input and generates the missing part
         masked_vol = Input(shape=self.vol_shape)
         gen_missing = self.generator(masked_vol)
@@ -82,7 +78,6 @@ class EncoderDecoderGAN():
         model.add(Conv3D(128, kernel_size=5, strides=2, padding="same"))
         model.add(LeakyReLU(alpha=0.2))
         model.add(BatchNormalization(momentum=0.8))
-
         model.add(Conv3D(512, kernel_size=1, strides=2, padding="same"))
         model.add(LeakyReLU(alpha=0.2))
         model.add(Dropout(0.5))
@@ -99,12 +94,9 @@ class EncoderDecoderGAN():
         model.add(Deconv3D(64, kernel_size=5, padding="same"))
         model.add(Activation('relu'))
         model.add(BatchNormalization(momentum=0.8))
-        # 
         model.add(UpSampling3D())
-        #
         model.add(Deconv3D(self.channels, kernel_size=5, padding="same"))
         model.add(Activation('tanh'))
-
         model.summary()
 
         masked_vol = Input(shape=self.vol_shape)
@@ -135,10 +127,8 @@ class EncoderDecoderGAN():
         return Model(vol, validity)
 
     def generateWall(self):
-
         x, y, z = np.indices((32, 32, 32))
-        voxel = (x < 28)&(x>5) & (y>5) & (y < 28) & (z>10)&(z < 25)
-        
+        voxel = (x < 28)&(x>5) & (y>5) & (y < 28) & (z>10)&(z < 25)        
         # add channel 
         voxel = voxel[...,np.newaxis].astype(np.float)
         # repeat 1000 times
@@ -156,7 +146,6 @@ class EncoderDecoderGAN():
         z1 = np.random.randint(0, self.vol_height - self.mask_length, vols.shape[0])
         z2 = z1 + self.mask_length
 
-
         masked_vols = np.empty_like(vols)
         missing_parts = np.empty((vols.shape[0], self.mask_height, self.mask_width, self.mask_length, self.channels))
         for i, vol in enumerate(vols):
@@ -171,7 +160,6 @@ class EncoderDecoderGAN():
     def train(self, epochs, batch_size=16, sample_interval=50):
 
         X_train = self.generateWall()
-
         # Adversarial ground truths
         valid = np.ones((batch_size, 1))
         fake = np.zeros((batch_size, 1))
@@ -181,9 +169,7 @@ class EncoderDecoderGAN():
             # Train Discriminator
             idx = np.random.randint(0, X_train.shape[0], batch_size)
             vols = X_train[idx]
-
             masked_vols, missing_parts, _ = self.mask_randomly(vols)
-
             # Generate a batch 
             gen_missing = self.generator.predict(masked_vols)
             # print(gen_missing.shape)
@@ -194,7 +180,6 @@ class EncoderDecoderGAN():
 
             # Train Generator
             g_loss = self.combined.train_on_batch(masked_vols, [missing_parts, valid])
-
             print ("%d [D loss: %f, acc: %.2f%%] [G loss: %f, mse: %f]" % (epoch, d_loss[0], 100*d_loss[1], g_loss[0], g_loss[1]))
 
             # save generated samples
@@ -203,14 +188,13 @@ class EncoderDecoderGAN():
                 vols = X_train[idx]
                 self.sample_images(epoch, vols)
                 self.save_model()
+   
     def sample_images(self, epoch, vols):
         r, c = 2, 2
-
         masked_vols, missing_parts, (y1, y2, x1, x2, z1, z2) = self.mask_randomly(vols)
         gen_missing = self.generator.predict(masked_vols)
         gen_missing = np.where(gen_missing > 0.5, 1, 0)
         fig = plt.figure(figsize=plt.figaspect(0.5))
-
         vols = 0.5 * vols + 0.5
 
         for i in range(2):
@@ -235,18 +219,15 @@ class EncoderDecoderGAN():
 
             ax = fig.add_subplot(1, 2, 2, projection='3d')
             ax.voxels(combine_voxels, facecolors=colors2, edgecolor='k')
-            # ax.voxels(masked_vol, facecolors=colors1, edgecolor='k')
-                     
+            # ax.voxels(masked_vol, facecolors=colors1, edgecolor='k')                    
         # plt.show()
         fig.savefig("images/%d.png" % epoch)
         plt.close()
 
     def save_model(self):
-
         def save(model, model_name):
             model_path = "saved_model/%s.h5" % model_name
             model.save(model_path)
-
         save(self.generator, "generator")
         save(self.discriminator, "discriminator")
 
