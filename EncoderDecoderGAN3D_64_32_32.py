@@ -42,8 +42,7 @@ class EncoderDecoderGAN():
             self.discriminator = self.build_discriminator() 
             print("No checkpoints found")   
 
-        # discriminator
-        
+        # discriminator       
         self.discriminator.compile(loss='binary_crossentropy',
             optimizer=optimizer,
             metrics=['accuracy'])
@@ -226,6 +225,12 @@ class EncoderDecoderGAN():
             # filled_in = vols[i].copy()            
             one_gen_missing = gen_missing[i]
             one_gen_missing = one_gen_missing[:, :, :, 0].astype(np.bool)
+
+            # Compute hamming loss
+            true_missing_part = missing_parts[i]
+            true_missing_part = true_missing_part[:, :, :, 0].astype(np.bool)  
+            ham_loss = hamming_loss(true_missing_part.ravel(), one_gen_missing.ravel())
+            
             filled_in[y1[i]:y2[i], x1[i]:x2[i], z1[i]:z2[i]] = one_gen_missing  
             fill = filled_in       
             combine_voxels = masked_vol | fill
@@ -237,10 +242,11 @@ class EncoderDecoderGAN():
             ax = fig.add_subplot(1, 2, 2, projection='3d')
             ax.voxels(combine_voxels, facecolors=colors2, edgecolor='black', linewidth=0.2)
             # ax.voxels(masked_vol, facecolors=colors1, edgecolor='k')
-                     
-        # plt.show()
-        fig.savefig("images/%d.png" % epoch)
-        plt.close()
+            ax.set_title("Hamming Loss: %f" % ham_loss)
+            # plt.show()
+            fig.savefig("images/%d_%d.png" % (epoch,i))
+            print("saved sample images")
+            plt.close()
 
     def save_model(self):
 
