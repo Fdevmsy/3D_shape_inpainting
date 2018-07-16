@@ -191,10 +191,12 @@ class EncoderDecoderGAN():
    
     def sample_images(self, epoch, vols):
         r, c = 2, 2
+
         masked_vols, missing_parts, (y1, y2, x1, x2, z1, z2) = self.mask_randomly(vols)
         gen_missing = self.generator.predict(masked_vols)
         gen_missing = np.where(gen_missing > 0.5, 1, 0)
-        fig = plt.figure(figsize=plt.figaspect(0.5))
+        fig = plt.figure(figsize=plt.figaspect(0.5), dpi=300)
+
         vols = 0.5 * vols + 0.5
 
         for i in range(2):
@@ -203,12 +205,18 @@ class EncoderDecoderGAN():
             colors1 = np.empty(masked_vol.shape, dtype=object)
             colors1[masked_vol] = 'red'
             ax = fig.add_subplot(1, 2, 1, projection='3d')
-            ax.voxels(masked_vol, facecolors=colors1, edgecolor='k')
+            ax.voxels(masked_vol, facecolors=colors1, edgecolor='black', linewidth=0.2)
             
             filled_in = np.zeros_like(masked_vol)
             # filled_in = vols[i].copy()            
             one_gen_missing = gen_missing[i]
             one_gen_missing = one_gen_missing[:, :, :, 0].astype(np.bool)
+
+            # Compute hamming loss
+            true_missing_part = missing_parts[i]
+            true_missing_part = true_missing_part[:, :, :, 0].astype(np.bool)  
+            ham_loss = hamming_loss(true_missing_part.ravel(), one_gen_missing.ravel())
+            
             filled_in[y1[i]:y2[i], x1[i]:x2[i], z1[i]:z2[i]] = one_gen_missing  
             fill = filled_in       
             combine_voxels = masked_vol | fill
@@ -218,11 +226,13 @@ class EncoderDecoderGAN():
             colors2[fill] = 'blue'
 
             ax = fig.add_subplot(1, 2, 2, projection='3d')
-            ax.voxels(combine_voxels, facecolors=colors2, edgecolor='k')
-            # ax.voxels(masked_vol, facecolors=colors1, edgecolor='k')                    
-        # plt.show()
-        fig.savefig("images/%d.png" % epoch)
-        plt.close()
+            ax.voxels(combine_voxels, facecolors=colors2, edgecolor='black', linewidth=0.2)
+            # ax.voxels(masked_vol, facecolors=colors1, edgecolor='k')
+            ax.set_title("Hamming Loss: %f" % ham_loss)
+            # plt.show()
+            fig.savefig("images/%d_%d.png" % (epoch,i))
+            print("saved sample images")
+            plt.close()
 
     def save_model(self):
         def save(model, model_name):
