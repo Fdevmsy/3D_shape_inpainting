@@ -1,20 +1,24 @@
 from __future__ import print_function, division
-from keras.datasets import cifar10
-from keras.layers import Input, Dense, Reshape, Flatten, Dropout, multiply, GaussianNoise
-from keras.layers import BatchNormalization, Activation, Embedding, ZeroPadding3D
-from keras.layers import MaxPooling3D
+from mpl_toolkits.mplot3d import Axes3D  # you should keep the import
+import matplotlib.pyplot as plt
+import numpy as np
+from keras.layers import BatchNormalization, Activation
+from keras.layers import Input, Dense, Flatten, Dropout
 from keras.layers.advanced_activations import LeakyReLU
 from keras.layers.convolutional import UpSampling3D, Conv3D, Deconv3D
 from keras.models import Sequential, Model
-from keras.optimizers import Adam
-from keras import losses
-from keras.utils import to_categorical
-import keras.backend as K
-import matplotlib.pyplot as plt
-import numpy as np
-from mpl_toolkits.mplot3d import Axes3D
-from keras.models import model_from_json
 from keras.models import load_model
+from keras.optimizers import Adam
+from sklearn.metrics import hamming_loss
+import os
+from utils import mkdirs
+
+IMAGE_DIR = './64_32_32/images'
+MODEL_DIR = './64_32_32/saved_model'
+
+mkdirs(IMAGE_DIR)
+mkdirs(MODEL_DIR)
+
 
 class EncoderDecoderGAN():
     def __init__(self):
@@ -32,23 +36,22 @@ class EncoderDecoderGAN():
 
         optimizer = Adam(0.0002, 0.5)
 
-        try: 
-            self.discriminator = load_model('saved_model/discriminator.h5')
-            self.generator = load_model('saved_model/generator.h5')
+        try:
+            self.discriminator = load_model(os.path.join(MODEL_DIR, 'discriminator.h5'))
+            self.generator = load_model(os.path.join(MODEL_DIR, 'generator.h5'))
 
             print("Loaded checkpoints")
         except:
             self.generator = self.build_generator()
-            self.discriminator = self.build_discriminator() 
-            print("No checkpoints found")   
+            self.discriminator = self.build_discriminator()
+            print("No checkpoints found")
 
-        # discriminator       
+            # discriminator
         self.discriminator.compile(loss='binary_crossentropy',
-            optimizer=optimizer,
-            metrics=['accuracy'])
+                                   optimizer=optimizer,
+                                   metrics=['accuracy'])
 
         # generator
-        
 
         # The generator takes noise as input and generates the missing part
         masked_vol = Input(shape=self.vol_shape)
@@ -63,10 +66,10 @@ class EncoderDecoderGAN():
 
         # The combined model  (stacked generator and discriminator)
         # Trains generator to fool discriminator
-        self.combined = Model(masked_vol , [gen_missing, valid])
+        self.combined = Model(masked_vol, [gen_missing, valid])
         self.combined.compile(loss=['mse', 'binary_crossentropy'],
-            loss_weights=[0.999, 0.001],
-            optimizer=optimizer)
+                              loss_weights=[0.999, 0.001],
+                              optimizer=optimizer)
 
     def build_generator(self):
 
@@ -137,10 +140,10 @@ class EncoderDecoderGAN():
     def generateWall(self):
 
         x, y, z = np.indices((64, 32, 32))
-        voxel = (x < 56)&(x>10) & (y>5) & (y < 28) & (z>10)&(z < 25)
-        
+        voxel = (x < 56) & (x > 10) & (y > 5) & (y < 28) & (z > 10) & (z < 25)
+
         # add channel 
-        voxel = voxel[...,np.newaxis].astype(np.float)
+        voxel = voxel[..., np.newaxis].astype(np.float)
         # repeat 1000 times
         voxels = list()
         for i in range(1000):
@@ -194,7 +197,8 @@ class EncoderDecoderGAN():
             # Train Generator
             g_loss = self.combined.train_on_batch(masked_vols, [missing_parts, valid])
 
-            print ("%d [D loss: %f, acc: %.2f%%] [G loss: %f, mse: %f]" % (epoch, d_loss[0], 100*d_loss[1], g_loss[0], g_loss[1]))
+            print("%d [D loss: %f, acc: %.2f%%] [G loss: %f, mse: %f]" % (
+                epoch, d_loss[0], 100 * d_loss[1], g_loss[0], g_loss[1]))
 
             # save generated samples
             if epoch % sample_interval == 0:
@@ -202,7 +206,7 @@ class EncoderDecoderGAN():
                 vols = X_train[idx]
                 self.sample_images(epoch, vols)
                 self.save_model()
-    
+
     def sample_images(self, epoch, vols):
         r, c = 2, 2
 
@@ -220,7 +224,7 @@ class EncoderDecoderGAN():
             colors1[masked_vol] = 'red'
             ax = fig.add_subplot(1, 2, 1, projection='3d')
             ax.voxels(masked_vol, facecolors=colors1, edgecolor='black', linewidth=0.2)
-            
+
             filled_in = np.zeros_like(masked_vol)
             # filled_in = vols[i].copy()            
             one_gen_missing = gen_missing[i]
@@ -228,13 +232,13 @@ class EncoderDecoderGAN():
 
             # Compute hamming loss
             true_missing_part = missing_parts[i]
-            true_missing_part = true_missing_part[:, :, :, 0].astype(np.bool)  
+            true_missing_part = true_missing_part[:, :, :, 0].astype(np.bool)
             ham_loss = hamming_loss(true_missing_part.ravel(), one_gen_missing.ravel())
-            
-            filled_in[y1[i]:y2[i], x1[i]:x2[i], z1[i]:z2[i]] = one_gen_missing  
-            fill = filled_in       
+
+            filled_in[y1[i]:y2[i], x1[i]:x2[i], z1[i]:z2[i]] = one_gen_missing
+            fill = filled_in
             combine_voxels = masked_vol | fill
-            
+
             colors2 = np.empty(combine_voxels.shape, dtype=object)
             colors2[masked_vol] = 'red'
             colors2[fill] = 'blue'
@@ -244,18 +248,19 @@ class EncoderDecoderGAN():
             # ax.voxels(masked_vol, facecolors=colors1, edgecolor='k')
             ax.set_title("Hamming Loss: %f" % ham_loss)
             # plt.show()
-            fig.savefig("images/%d_%d.png" % (epoch,i))
+            fig.savefig(os.path.join(IMAGE_DIR, "%d_%d.png" % (epoch, i)))
             print("saved sample images")
             plt.close()
 
     def save_model(self):
 
         def save(model, model_name):
-            model_path = "saved_model/%s.h5" % model_name
+            model_path = os.path.join(MODEL_DIR, "%s.h5" % model_name)
             model.save(model_path)
 
         save(self.generator, "generator")
         save(self.discriminator, "discriminator")
+
 
 if __name__ == '__main__':
     context_encoder = EncoderDecoderGAN()
