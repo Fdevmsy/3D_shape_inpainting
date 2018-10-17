@@ -12,13 +12,15 @@ Tensorflow-gpu==1.7.0
 
 Keras==2.20
 
+Matplotlib>=2.2
+
 ## Example
 
 ~~~
 python EncoderDecoderGAN3D.py
 ~~~
 
-For the fist few epochs: 
+For the first few epochs: 
 
 ![](images__32cube/photo_2018-07-06_19-34-57.jpg)
 
